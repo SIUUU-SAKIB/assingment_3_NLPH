@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import app from "./app";
-import { Express, Request, Response } from "express";
+
 require("dotenv").config()
 const server = async () => {
     try {
