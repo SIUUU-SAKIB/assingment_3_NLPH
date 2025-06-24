@@ -50,11 +50,11 @@ router.get(`/books`, (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 }));
 // GET BOOKS BY ID
-router.get(`/books/:id`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/books/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const bookById = yield book_model_1.bookSchema.findById(req.params.id);
         if (!bookById) {
-            return res.status(404).json({ status: false, message: "Book not found" });
+            res.status(404).json({ status: false, message: "Book not found" });
         }
         else {
             res.status(200).json({
@@ -118,10 +118,7 @@ router.post(`/borrow`, (req, res) => __awaiter(void 0, void 0, void 0, function*
         const { book, quantity, dueDate } = req.body;
         const requestedBook = yield book_model_1.bookSchema.findById(book);
         if (!requestedBook) {
-            return res.status(404).json({ message: "Book not found" });
-        }
-        if ((requestedBook === null || requestedBook === void 0 ? void 0 : requestedBook.copies) < quantity) {
-            return res.status(400).json({ message: "Not enough copies available" });
+            res.status(404).json({ message: "Book not found" });
         }
         // update the boook
         const newBorrow = yield borrowModel_1.BorrowSchema.create({

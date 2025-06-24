@@ -3,7 +3,7 @@ const app: Application = express()
 import { router } from "./controller/controller"
 app.use(express.json())
 // add books
-app.use('/api', router)
+app.use("/api", router)
 
 app.use('/', router)
 

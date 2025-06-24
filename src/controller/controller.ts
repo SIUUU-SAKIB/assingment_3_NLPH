@@ -1,9 +1,8 @@
 import express, { Application, Request, Response } from "express"
 import { model, Mongoose, Schema } from "mongoose"
 import { bookSchema } from "../models/book.model"
-import { IBook } from "../interfaces/book_interface"
+import { BorrowSchema } from "../models/borrowModel"
 import { IBorrow } from "../interfaces/borrow_interface"
-import Borrow, { BorrowSchema } from "../models/borrowModel"
 const router = express.Router()
 
 
@@ -42,11 +41,11 @@ router.get(`/books`, async (req: Request, res: Response) => {
     }
 })
 // GET BOOKS BY ID
-router.get(`/books/:id`, async (req: Request, res: Response) => {
+router.get('/books/:id', async (req: Request, res: Response) => {
     try {
         const bookById = await bookSchema.findById(req.params.id)
         if (!bookById) {
-            return res.status(404).json({ status: false, message: "Book not found" });
+            res.status(404).json({ status: false, message: "Book not found" });
         } else {
             res.status(200).json({
                 status: true,
@@ -113,11 +112,9 @@ router.post(`/borrow`, async (req: Request, res: Response) => {
         const { book, quantity, dueDate }: IBorrow = req.body;
         const requestedBook = await bookSchema.findById(book)
         if (!requestedBook) {
-            return res.status(404).json({ message: "Book not found" })
+            res.status(404).json({ message: "Book not found" })
         }
-        if (requestedBook?.copies < quantity) {
-            return res.status(400).json({ message: "Not enough copies available" });
-        }
+
 
         // update the boook
         const newBorrow = await BorrowSchema.create({
