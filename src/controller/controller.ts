@@ -1,7 +1,7 @@
 import express, { Application, Request, Response } from "express"
 import { model, Mongoose, Schema } from "mongoose"
 import { bookSchema } from "../models/book.model"
-import { BorrowSchema } from "../models/borrowModel"
+import { BorrowModel } from "../models/borrowModel"
 import { IBorrow } from "../interfaces/borrow_interface"
 const router = express.Router()
 
@@ -117,7 +117,7 @@ router.post(`/borrow`, async (req: Request, res: Response) => {
 
 
         // update the boook
-        const newBorrow = await BorrowSchema.create({
+        const newBorrow = await BorrowModel.create({
             book, quantity, dueDate
         })
         res.status(201).json({
@@ -134,49 +134,49 @@ router.post(`/borrow`, async (req: Request, res: Response) => {
 })
 
 // AGGREGATE
-router.get(`/borrow`, async (req: Request, res: Response) => {
-    try {
-        const sumary = await BorrowSchema.aggregate([
-            {
-                $group: {
-                    _id: "$borrow",
-                    totalQuantity: { $sum: "$quantity" }
-                }
-            },
-            {
-                $lookup: {
-                    from: "books",
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: "book"
-                }
-            },
-            { $unwind: "$borrow" },
-            {
-                $project: {
-                    _id: 0,
-                    book: {
-                        title: "$books.title",
-                        isbn: "$books.isbn"
-                    },
-                    totalQuantity: 1
-                }
-            }
-        ]);
+router.get("/borrow", async (req: Request, res: Response) => {
+  try {
+    const summary = await BorrowModel.aggregate([
+      {
+        $group: {
+          _id: "$book",
+          totalQuantity: { $sum: "$quantity" },
+        },
+      },
+      {
+        $lookup: {
+          from: "books",
+          localField: "_id",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      { $unwind: "$bookDetails" },
+      {
+        $project: {
+          _id: 0,
+          book: {
+            title: "$bookDetails.title",
+            isbn: "$bookDetails.isbn",
+          },
+          totalQuantity: 1,
+        },
+      },
+    ]);
 
-        res.json({
-            success: true,
-            message: "Borrowed books sumary successfully",
-            data: sumary
-        });
-    } catch (err) {
-        res.status(404).json({
-            success: false,
-            message: "Failed to get borrow summary",
-            error: err
-        });
-    }
-})
+    res.json({
+      success: true,
+      message: "Borrowed books summary successfully",
+      data: summary,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to get borrow summary",
+      error: err,
+    });
+  }
+});
 
 router.get(`/`, (req, res) => {
     res.send(`ASSINGMENT THREE PROGRAMMING HERO`)

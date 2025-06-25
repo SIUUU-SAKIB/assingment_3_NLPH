@@ -121,7 +121,7 @@ router.post(`/borrow`, (req, res) => __awaiter(void 0, void 0, void 0, function*
             res.status(404).json({ message: "Book not found" });
         }
         // update the boook
-        const newBorrow = yield borrowModel_1.BorrowSchema.create({
+        const newBorrow = yield borrowModel_1.BorrowModel.create({
             book, quantity, dueDate
         });
         res.status(201).json({
@@ -138,46 +138,46 @@ router.post(`/borrow`, (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 }));
 // AGGREGATE
-router.get(`/borrow`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/borrow", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sumary = yield borrowModel_1.BorrowSchema.aggregate([
+        const summary = yield borrowModel_1.BorrowModel.aggregate([
             {
                 $group: {
-                    _id: "$borrow",
-                    totalQuantity: { $sum: "$quantity" }
-                }
+                    _id: "$book",
+                    totalQuantity: { $sum: "$quantity" },
+                },
             },
             {
                 $lookup: {
                     from: "books",
                     localField: "_id",
                     foreignField: "_id",
-                    as: "book"
-                }
+                    as: "bookDetails",
+                },
             },
-            { $unwind: "$borrow" },
+            { $unwind: "$bookDetails" },
             {
                 $project: {
                     _id: 0,
                     book: {
-                        title: "$books.title",
-                        isbn: "$books.isbn"
+                        title: "$bookDetails.title",
+                        isbn: "$bookDetails.isbn",
                     },
-                    totalQuantity: 1
-                }
-            }
+                    totalQuantity: 1,
+                },
+            },
         ]);
         res.json({
             success: true,
-            message: "Borrowed books sumary successfully",
-            data: sumary
+            message: "Borrowed books summary successfully",
+            data: summary,
         });
     }
     catch (err) {
-        res.status(404).json({
+        res.status(500).json({
             success: false,
             message: "Failed to get borrow summary",
-            error: err
+            error: err,
         });
     }
 }));

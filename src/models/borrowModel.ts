@@ -1,12 +1,27 @@
-import { model, Schema, Types } from "mongoose";
+// models/Borrow.ts
+import { Schema, model } from "mongoose";
 import { IBorrow } from "../interfaces/borrow_interface";
 
-export const BorrowSchema = model("Borrow", new Schema<IBorrow>({
-    book: { type: String,  required: true },
-    quantity: { type: Number, required: true },
-    dueDate: { type: Date, default: Date.now() }
-},
+const borrowSchema = new Schema<IBorrow>(
     {
-        timestamps: true
-    }))
-    
+        book: { type: String, required: true },
+        quantity: { type: Number, required: true },
+        dueDate: { type: Date, default: Date.now },
+    },
+    {
+        timestamps: true,
+    }
+);
+
+
+borrowSchema.pre("aggregate", function (next) {
+    console.log("borrow triggered");
+    next();
+});
+
+
+borrowSchema.post("aggregate", function (res) {
+    console.log("return documents", res.length);
+});
+
+export const BorrowModel = model("Borrow", borrowSchema);
